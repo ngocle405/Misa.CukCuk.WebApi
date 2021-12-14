@@ -60,7 +60,7 @@ namespace MISA.CukCuk.Web.Controllers
         /// createBy:Lê thanh ngọc (23/11/2021)
         // GET api/<CustomersController>/5
         [HttpGet("{customerId}")]
-        public IActionResult Get(string customerId)
+        public IActionResult Get(Guid customerId)
         {
             try
             {
@@ -269,9 +269,9 @@ namespace MISA.CukCuk.Web.Controllers
                 var sql = $"DELETE FROM Customer WHERE CustomerId = @CustomerId";
                 DynamicParameters parameters = new DynamicParameters(); // Để tránh lỗi sql injection
                 parameters.Add("CustomerId", customerId);
-                var rowEffects = sqlConnection.Execute(sql, param: parameters);
+                var rowAffect = sqlConnection.Execute(sql, param: parameters);
                 sqlConnection.Close();
-                return StatusCode(201, rowEffects);
+                return StatusCode(201, rowAffect);
 
             }
             catch (Exception ex)
@@ -279,7 +279,7 @@ namespace MISA.CukCuk.Web.Controllers
                 var result = new
                 {
                     devMsg = ex.Message,
-                    userMsg = "Có lỗi xảy ra vui lòng liên hệ MISA để được trợ giúp",
+                    userMsg = "Có lỗi xảy ra vui lòng liên hệ ngọc dz để được trợ giúp",
                     data = DBNull.Value,
                     moreInfo = ""
                 };
