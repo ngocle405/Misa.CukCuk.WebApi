@@ -120,7 +120,7 @@ namespace MISA.CukCuk.Web.Controllers
                 }
                 var colums = "";
                 var columsParams = "";
-
+             
                 DynamicParameters parameters = new DynamicParameters();//khơi tạo dynamic để tránh lỗi injection    
                 // Lấy ra các property của đối tượng:                                               
                 var props = typeof(Customer).GetProperties();
@@ -143,6 +143,7 @@ namespace MISA.CukCuk.Web.Controllers
                     colums += $"{propName},";
                     columsParams += $"@{propName},";
                     parameters.Add($"@{propName}", propValue);
+              
                 }
                 //thực hiện trừ đi kí tự (,) ở cuối cùng.
                 colums = colums.Substring(0, colums.Length - 1);
@@ -172,8 +173,8 @@ namespace MISA.CukCuk.Web.Controllers
         }
 
         // PUT api/<CustomersController>/5
-        [HttpPut("{id}")]
-        public IActionResult Put(Guid id, Customer customer)
+        [HttpPut("{CustomerId}")]
+        public IActionResult Put(Guid customerId, Customer customer)
         {
             try
             {
@@ -190,10 +191,7 @@ namespace MISA.CukCuk.Web.Controllers
                     };
                     return BadRequest(msg);
                 }
-                if (id ==null)
-                {
-                    return BadRequest();
-                }
+               
                 //check trùng mã :
                 var connectionString = "User Id=dev;Host=47.241.69.179;Port=3306;Database=MISA.CukCuk_Demo_NVMANH_copy;Password=manhmisa;Character Set=utf8";
                 //using IDbConnection dbConnection = new MySqlConnection(connectionString);
@@ -201,8 +199,8 @@ namespace MISA.CukCuk.Web.Controllers
               
                 var colums = "";
                 var columsParams = "";
-
-                DynamicParameters parameters = new DynamicParameters();//khơi tạo dynamic để tránh lỗi injection    
+                var sqlUpdate = "";
+                  DynamicParameters parameters = new DynamicParameters();//khơi tạo dynamic để tránh lỗi injection    
                 // Lấy ra các property của đối tượng:                                               
                 var props = typeof(Customer).GetProperties();
                 //lấy ra name của đối tượng
@@ -215,28 +213,27 @@ namespace MISA.CukCuk.Web.Controllers
                     var propName = prop.Name;
                     //lấy giá trị của property tương ứng đối tượng.
                     var propValue = prop.GetValue(customer);
-                    //tạo ra mã khách hàng mới ngẫu nhiên
-                    //if (propName == $"{className}Id" && prop.PropertyType == typeof(Guid))
-                    //{
-                    //    propValue = Guid.NewGuid();
-                    //}
+                    //đối chiếu mã khách hàng.
+                    if (propName == $"{className}Id" && prop.PropertyType == typeof(Guid))
+                    {
+                        continue;
+                    }
                     //cập nhập chuỗi lệnh thêm mới và add tham số tương ứng.
-                    colums += $"{propName},";
-                    columsParams += $"@{propName},";
                     parameters.Add($"@{propName}", propValue);
+                    colums = $"{propName}";
+                    columsParams = $"@{propName}";
+                 
+                    sqlUpdate += $"{colums} = {columsParams},";
                 }
                 //thực hiện trừ đi kí tự (,) ở cuối cùng.
-                colums = colums.Substring(0, colums.Length - 1);
-                columsParams = columsParams.Substring(0, columsParams.Length - 1);
-                var sql = $"UPDATE Customer set ({colums}) = ({columsParams})";
+             
+                sqlUpdate = sqlUpdate.Substring(0, sqlUpdate.Length - 1);
+                var sql = $"UPDATE Customer SET {sqlUpdate} WHERE CustomerId = @CustomerId";
+                parameters.Add($"@CustomerId", customerId);
                 // thực thi thêm
-                var rowAffect = mySqlConnection.Execute(sql, param: parameters);
+                var rowAffect = mySqlConnection.Execute(sql, param: parameters, commandType: System.Data.CommandType.Text);
                 return StatusCode(201, rowAffect);
-                //var rowAffect = dbConnection.Execute("Proc_InsertCustomer", customer, commandType: CommandType.StoredProcedure);// excute đọc hàm
-                //if (rowAffect > 0)
-                //{
-                //    return Created("add successfull", customer);
-                //}
+             
             }
             catch (Exception ex)
             {
