@@ -219,10 +219,10 @@ namespace MISA.CukCuk.Web.Controllers
                         continue;
                     }
                     //cập nhập chuỗi lệnh thêm mới và add tham số tương ứng.
-                    parameters.Add($"@{propName}", propValue);
+                    
                     colums = $"{propName}";
                     columsParams = $"@{propName}";
-                 
+                    parameters.Add($"@{propName}", propValue);
                     sqlUpdate += $"{colums} = {columsParams},";
                 }
                 //thực hiện trừ đi kí tự (,) ở cuối cùng.
@@ -232,7 +232,7 @@ namespace MISA.CukCuk.Web.Controllers
                 parameters.Add($"@CustomerId", customerId);
                 // thực thi thêm
                 var rowAffect = mySqlConnection.Execute(sql, param: parameters, commandType: System.Data.CommandType.Text);
-                return StatusCode(201, rowAffect);
+                return StatusCode(200, rowAffect);
              
             }
             catch (Exception ex)
@@ -265,10 +265,10 @@ namespace MISA.CukCuk.Web.Controllers
                 // Thực thi xóa dữ liệu trong Database:
                 var sql = $"DELETE FROM Customer WHERE CustomerId = @CustomerId";
                 DynamicParameters parameters = new DynamicParameters(); // Để tránh lỗi sql injection
-                parameters.Add("CustomerId", customerId);
+                parameters.Add($"@CustomerId", customerId);
                 var rowAffect = sqlConnection.Execute(sql, param: parameters);
                 sqlConnection.Close();
-                return StatusCode(201, rowAffect);
+                return StatusCode(200, rowAffect);
 
             }
             catch (Exception ex)
